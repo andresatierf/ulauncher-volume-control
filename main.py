@@ -21,7 +21,13 @@ class VolumeControlExtension(Extension):
 
 
 class KeywordQueryEventListener(EventListener):
+    def getApps(self):
+        os.system("pactl list sink-inputs")
+        return [{"name": "spotify", "sink-input": "6"}]
+
     def on_event(self, event, extension):
+        apps = getApps()
+
         query = event.get_argument()
 
         if query and query.isnumeric():
@@ -32,6 +38,8 @@ class KeywordQueryEventListener(EventListener):
                         name=f"Set system volume to {query}",
                         on_enter=ExtensionCustomAction(
                             {
+                                "cmd": "set-sink-volume",
+                                "sink": "@DEFAULT_SINK@",
                                 "vol": query,
                             },
                             keep_app_open=False,
@@ -40,21 +48,25 @@ class KeywordQueryEventListener(EventListener):
                 ]
             )
 
-        return RenderResultListAction(
-            [
+        items = []
+        for app in apps:
+            items.append(
                 ExtensionResultItem(
                     icon="images/icon.png",
-                    name="Set system volume",
-                    on_enter=HideWindowAction(),
+                    name=app["name"],
+                    on_enter=ExtensionCustomAction(
+                        {"cmd": "set-sink-input-volume", "sink": app["sink-input"], "app": query.split()[1]}
+                    ),
                 )
-            ]
-        )
+            )
+
+        return RenderResultListAction(items)
 
 
 class ItemEnterEventListener(EventListener):
     def on_event(self, event, extension):
         data = event.get_data()
-        os.system(f"pactl set-sink-volume @DEFAULT_SINK@ {data['vol']}%")
+        os.system(f"pactl {data['cmd']} {data['sink']} {data['vol']}%")
 
 
 if __name__ == "__main__":
