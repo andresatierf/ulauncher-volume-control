@@ -24,7 +24,7 @@ class KeywordQueryEventListener(EventListener):
     def on_event(self, event, extension):
         query = event.get_argument()
 
-        if query.isnumeric():
+        if query and query.isnumeric():
             return RenderResultListAction(
                 [
                     ExtensionResultItem(
@@ -50,26 +50,11 @@ class KeywordQueryEventListener(EventListener):
             ]
         )
 
-        items = []
-        # logger.info("preferences %s" % json.dumps(extension.preferences))
-        for i in range(5):
-            item_name = extension.preferences["item_name"]
-            items.append(
-                ExtensionResultItem(
-                    icon="images/icon.png",
-                    name="%s %s" % (item_name, i),
-                    description="Item description %s" % i,
-                    on_enter=HideWindowAction(),
-                )
-            )
-
-        return RenderResultListAction(items)
-
 
 class ItemEnterEventListener(EventListener):
     def on_event(self, event, extension):
         data = event.get_data()
-        os.system(f"pactl set-sink-volume @DEFAULT_SINK@ {data.vol}%")
+        os.system(f"pactl set-sink-volume @DEFAULT_SINK@ {data['vol']}%")
 
 
 if __name__ == "__main__":
