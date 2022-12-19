@@ -1,6 +1,6 @@
-import json
-import logging
-from time import sleep
+# import json
+# import logging
+# from time import sleep
 from ulauncher.api.client.Extension import Extension
 from ulauncher.api.client.EventListener import EventListener
 from ulauncher.api.shared.event import KeywordQueryEvent, ItemEnterEvent
@@ -9,7 +9,7 @@ from ulauncher.api.shared.action.RenderResultListAction import RenderResultListA
 from ulauncher.api.shared.action.ExtensionCustomAction import ExtensionCustomAction
 from ulauncher.api.shared.action.HideWindowAction import HideWindowAction
 
-logger = logging.getLogger(__name__)
+# logger = logging.getLogger(__name__)
 
 
 class VolumeControlExtension(Extension):
@@ -30,17 +30,16 @@ class KeywordQueryEventListener(EventListener):
                         icon="images/icon.png",
                         name=f"Set system volume to {query}",
                         on_enter=ExtensionCustomAction(
-                            {"new_name": "Item %s was clicked"}, keep_app_open=False
+                            {"new_name": "Item s was clicked"}, keep_app_open=False
                         ),
                     )
                 ]
             )
 
         items = []
-        logger.info("preferences %s" % json.dumps(extension.preferences))
+        # logger.info("preferences %s" % json.dumps(extension.preferences))
         for i in range(5):
             item_name = extension.preferences["item_name"]
-            data = {"new_name": "%s %s was clicked" % (item_name, i)}
             items.append(
                 ExtensionResultItem(
                     icon="images/icon.png",
