@@ -24,15 +24,27 @@ class KeywordQueryEventListener(EventListener):
     def on_event(self, event, extension):
         query = event.get_argument()
 
+        if query.isnumeric():
+            return RenderResultListAction(
+                [
+                    ExtensionResultItem(
+                        icon="images/icon.png",
+                        name=f"Set system volume to {query}",
+                        on_enter=HideWindowAction(),
+                    )
+                ]
+            )
+
         return RenderResultListAction(
             [
                 ExtensionResultItem(
                     icon="images/icon.png",
-                    name=f"Set system volume to {query}",
+                    name=f"Set system volume",
                     on_enter=HideWindowAction(),
                 )
             ]
         )
+
 
         items = []
         # logger.info("preferences %s" % json.dumps(extension.preferences))
