@@ -10,6 +10,17 @@ from ulauncher.api.shared.action.ExtensionCustomAction import ExtensionCustomAct
 from ulauncher.api.shared.action.SetUserQueryAction import SetUserQueryAction
 
 
+def getSystem():
+    output = str(subprocess.check_output("pactl list sinks", shell=True))
+    sinks = re.findall("Sink #(\d+)\\\\n\\\\tState: RUNNING", output)
+    vols = re.findall("State: RUNNING.*?Volume: (.+?)\\\\n", output)
+    return {
+        "name": "System",
+        "sink": sinks.pop(0),
+        "vol": vols.pop(0),
+        "cmd": "set-sink-volume",
+    }
+
 
 def getPlayingApplications():
     output = str(subprocess.check_output("pactl list sink-inputs", shell=True))
@@ -18,7 +29,7 @@ def getPlayingApplications():
     vols = re.findall("Volume: (.+?)\\\\n", output)
 
     return [
-        {"name": name, "sink-input": sink, "vol": vol}
+        {"name": name, "sink": sink, "vol": vol, "cmd": "set-sink-input-volume"}
         for name, sink, vol in zip(names, sinks, vols)
     ]
 
@@ -46,15 +57,17 @@ class VolumeControlExtension(Extension):
 
 class KeywordQueryEventListener(EventListener):
     def on_event(self, event, extension):
+        system = getSystem()
         apps = getPlayingApplications()
         query = event.get_argument()
 
+        apps.insert(0, system)
         if not query:
             return RenderResultListAction(
                 createEntries(
                     apps=apps,
                     action=lambda app: SetUserQueryAction(
-                        f'{event.get_keyword()} {app["name"]}'
+                        f'{event.get_keyword()} {app["name"]} '
                     ),
                 )
             )
@@ -78,17 +91,26 @@ class KeywordQueryEventListener(EventListener):
             )
 
         application, *volume = query.split()
-        for app in apps:
-            print(application, app)
+        for index, app in enumerate(apps):
             if application.lower() not in app["name"].lower():
-                apps.pop(app)
+                if app["name"].lower() == "system":
+                    apps.append(
+                        apps.pop(
+                            list(map(lambda app: app["name"].lower(), apps)).index(
+                                "system"
+                            )
+                        )
+                    )
+                    continue
+
+                apps.pop(index)
 
         if not volume:
             return RenderResultListAction(
                 createEntries(
                     apps=apps,
                     action=lambda app: SetUserQueryAction(
-                        f'{event.get_keyword()} {app["name"]}'
+                        f'{event.get_keyword()} {app["name"]} '
                     ),
                 )
             )
@@ -99,8 +121,8 @@ class KeywordQueryEventListener(EventListener):
                 apps=apps,
                 action=lambda app: ExtensionCustomAction(
                     {
-                        "cmd": "set-sink-input-volume",
-                        "sink": app["sink-input"],
+                        "cmd": app["cmd"],
+                        "sink": app["sink"],
                         "vol": volume,
                     },
                     keep_app_open=False,
@@ -113,7 +135,6 @@ class KeywordQueryEventListener(EventListener):
 class ItemEnterEventListener(EventListener):
     def on_event(self, event, extension):
         data = event.get_data()
-        print(data)
         os.system(f"pactl {data['cmd']} {data['sink']} {data['vol']}%")
 
 
