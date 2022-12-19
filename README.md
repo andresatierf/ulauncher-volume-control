@@ -1,3 +1,3 @@
-# Demo Extension
+# Volume Control Extension
 
-<img aligh="center" src="http://i.imgur.com/NFFR1tm.png">
+Control system volume and specific apps volume
