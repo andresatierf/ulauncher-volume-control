@@ -21,12 +21,8 @@ class VolumeControlExtension(Extension):
 
 
 class KeywordQueryEventListener(EventListener):
-    def getApps(self):
-        os.system("pactl list sink-inputs")
-        return [{"name": "spotify", "sink-input": "6"}]
-
     def on_event(self, event, extension):
-        apps = getApps()
+        apps = [{"name": "spotify", "sink-input": "6"}]
 
         query = event.get_argument()
 
