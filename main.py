@@ -28,13 +28,13 @@ def getPlayingApplications():
     ]
 
 
-def createEntries(apps, action):
+def createEntries(apps, action, entry=None):
     entries = []
     for app in apps:
         entries.append(
             ExtensionResultItem(
                 icon="images/icon.png",
-                name=app["name"],
+                name=app["name"] if not entry else entry(app["name"]),
                 description=app["vol"],
                 on_enter=action(app),
             )
@@ -109,6 +109,7 @@ class KeywordQueryEventListener(EventListener):
                     },
                     keep_app_open=False,
                 ),
+                entry=lambda app: f"Set {app} volume to {volume.pop()}",
             )
         )
 
