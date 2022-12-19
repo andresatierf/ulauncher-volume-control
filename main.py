@@ -1,6 +1,3 @@
-# import json
-# import logging
-# from time import sleep
 import os
 import subprocess
 import re
@@ -10,10 +7,8 @@ from ulauncher.api.shared.event import KeywordQueryEvent, ItemEnterEvent
 from ulauncher.api.shared.item.ExtensionResultItem import ExtensionResultItem
 from ulauncher.api.shared.action.RenderResultListAction import RenderResultListAction
 from ulauncher.api.shared.action.ExtensionCustomAction import ExtensionCustomAction
-from ulauncher.api.shared.action.HideWindowAction import HideWindowAction
-from ulauncher.api.shared.action.SetUserQueryAction import SetUserQueryAction  # noqa
+from ulauncher.api.shared.action.SetUserQueryAction import SetUserQueryAction
 
-# logger = logging.getLogger(__name__)
 
 
 def getPlayingApplications():
@@ -34,7 +29,7 @@ def createEntries(apps, action, entry=None):
         entries.append(
             ExtensionResultItem(
                 icon="images/icon.png",
-                name=app["name"] if not entry else entry(app["name"]),
+                name=app["name"] if not entry else entry(app),
                 description=app["vol"],
                 on_enter=action(app),
             )
@@ -98,6 +93,7 @@ class KeywordQueryEventListener(EventListener):
                 )
             )
 
+        volume = volume.pop()
         return RenderResultListAction(
             createEntries(
                 apps=apps,
@@ -105,11 +101,11 @@ class KeywordQueryEventListener(EventListener):
                     {
                         "cmd": "set-sink-input-volume",
                         "sink": app["sink-input"],
-                        "vol": volume.pop(),
+                        "vol": volume,
                     },
                     keep_app_open=False,
                 ),
-                entry=lambda app: f"Set {app} volume to {volume.pop()}",
+                entry=lambda app: f"Set {app['name']} volume to {volume}%",
             )
         )
 
