@@ -11,7 +11,7 @@
     {
       "id": "keyword",
       "type": "keyword",
-      "name": "Set Volume",
+      "name": "Volume Control",
       "default_value": "vol"
     }
   ]
