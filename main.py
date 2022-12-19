@@ -69,7 +69,7 @@ class KeywordQueryEventListener(EventListener):
 class ItemEnterEventListener(EventListener):
     def on_event(self, event, extension):
         data = event.get_data()
-        os.system(f"pactl set-sink-volume @DEFAULT_SINK@ {data}%")
+        os.system(f"pactl set-sink-volume @DEFAULT_SINK@ {data.vol}%")
 
 
 if __name__ == "__main__":
