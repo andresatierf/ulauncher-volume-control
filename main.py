@@ -38,7 +38,7 @@ class KeywordQueryEventListener(EventListener):
                                 "sink": "@DEFAULT_SINK@",
                                 "vol": query,
                             },
-                            keep_app_open=False,
+                            keep_app_open=True,
                         ),
                     )
                 ]
@@ -51,7 +51,11 @@ class KeywordQueryEventListener(EventListener):
                     icon="images/icon.png",
                     name=app["name"],
                     on_enter=ExtensionCustomAction(
-                        {"cmd": "set-sink-input-volume", "sink": app["sink-input"], "app": query.split()[1]}
+                        {
+                            "cmd": "set-sink-input-volume",
+                            "sink": app["sink-input"],
+                            "vol": query.split()[1],
+                        }
                     ),
                 )
             )
