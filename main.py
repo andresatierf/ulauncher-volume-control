@@ -78,6 +78,7 @@ class KeywordQueryEventListener(EventListener):
                     ExtensionResultItem(
                         icon="images/icon.png",
                         name=f"Set system volume to {query}",
+                        description=system["vol"],
                         on_enter=ExtensionCustomAction(
                             {
                                 "cmd": "set-sink-volume",
