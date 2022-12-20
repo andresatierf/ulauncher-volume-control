@@ -40,7 +40,7 @@ def createEntries(apps, action, entry=None):
         entries.append(
             ExtensionResultItem(
                 icon="images/icon.png",
-                name=app["name"] if not entry else entry(app),
+                name=f"#{app['sink']} {app['name']}" if not entry else entry(app),
                 description=app["vol"],
                 on_enter=action(app),
             )
@@ -92,19 +92,12 @@ class KeywordQueryEventListener(EventListener):
             )
 
         application, *volume = query.split()
-        for index, app in enumerate(apps):
-            if application.lower() not in app["name"].lower():
-                if app["name"].lower() == "system":
-                    apps.append(
-                        apps.pop(
-                            list(map(lambda app: app["name"].lower(), apps)).index(
-                                "system"
-                            )
-                        )
-                    )
-                    continue
+        apps = list(
+            filter(lambda app: application.lower() in app["name"].lower(), apps)
+        )
 
-                apps.pop(index)
+        if list(filter(lambda app: app["name"].lower() == "system", apps)) == []:
+            apps.append(system)
 
         if not volume:
             return RenderResultListAction(
