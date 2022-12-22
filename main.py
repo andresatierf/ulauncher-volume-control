@@ -62,7 +62,7 @@ class KeywordQueryEventListener(EventListener):
                 createEntries(
                     apps=apps,
                     name=lambda app: f"#{app.index} {getCleanName(app, system)}",
-                    description=lambda app: f"#{app.volume}",
+                    description=lambda app: f"{app.volume}",
                     on_enter=lambda app: SetUserQueryAction(
                         f"{event.get_keyword()} {getCleanName(app, system)} "
                     ),
