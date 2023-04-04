@@ -1,4 +1,3 @@
-from pulsectl import Pulse
 from ulauncher.api.client.Extension import Extension
 from ulauncher.api.client.EventListener import EventListener
 from ulauncher.api.shared.event import KeywordQueryEvent, ItemEnterEvent
@@ -6,39 +5,29 @@ from ulauncher.api.shared.item.ExtensionResultItem import ExtensionResultItem
 from ulauncher.api.shared.action.RenderResultListAction import RenderResultListAction
 from ulauncher.api.shared.action.ExtensionCustomAction import ExtensionCustomAction
 from ulauncher.api.shared.action.SetUserQueryAction import SetUserQueryAction
+from ulauncher.api.shared.action.DoNothingAction import DoNothingAction
 
+from pulsectl import Pulse
 
-def getSystem():
-    with Pulse("ulauncher-volume-control") as pulse:
-        sinks = pulse.sink_list()
-        for sink in sinks:
-            if sink.name == pulse.server_info().default_sink_name:
-                return sink
-
-    return None
-
-
-def getPlayingApplications():
-    with Pulse("ulauncher-volume-control") as pulse:
-        return pulse.sink_input_list()
-
-
-def createEntries(apps, name, description, on_enter):
-    entries = []
-    for app in apps:
-        entries.append(
-            ExtensionResultItem(
-                icon="images/icon.png",
-                name=name(app),
-                description=description(app),
-                on_enter=on_enter(app),
-            )
-        )
-    return entries
-
-
-def getCleanName(app, system):
-    return "System" if app.name == system.name else app.name
+from src.enums import EventTypes, CommandTypes
+from src.items import (
+    cancel,
+    show_device_profiles,
+    show_menu,
+    show_playing_applications,
+    show_devices,
+    show_volume_selection,
+)
+from src.functions import (
+    get_device_profiles,
+    get_options,
+    get_devices,
+    get_system,
+    get_playing_applications,
+    filter_apps,
+    set_device_profile,
+    set_application_volume,
+)
 
 
 class VolumeControlExtension(Extension):
@@ -50,96 +39,96 @@ class VolumeControlExtension(Extension):
 
 class KeywordQueryEventListener(EventListener):
     def on_event(self, event, extension):
-        system = getSystem()
-        apps = getPlayingApplications()
-        query = event.get_argument()
+        keyword = event.get_keyword()
+        argument = event.get_argument()
 
-        if system:
-            apps.insert(0, system)
+        if not argument:
+            options = get_options()
 
-        if not query:
-            return RenderResultListAction(
-                createEntries(
-                    apps=apps,
-                    name=lambda app: f"#{app.index} {getCleanName(app, system)}",
-                    description=lambda app: f"{app.volume}",
-                    on_enter=lambda app: SetUserQueryAction(
-                        f"{event.get_keyword()} {getCleanName(app, system)} "
-                    ),
-                )
-            )
+            items = show_menu(options)
+            items += cancel()
 
-        if query and query.isnumeric():
-            volume = query
-            return RenderResultListAction(
-                [
-                    ExtensionResultItem(
-                        icon="images/icon.png",
-                        name=f"Set {getCleanName(system, system)} volume to {volume}",
-                        description=str(system.volume),
-                        on_enter=ExtensionCustomAction(
-                            {
-                                "sink": system,
-                                "volume": volume,
-                            },
-                            keep_app_open=False,
-                        ),
-                    )
-                ]
-            )
+            return RenderResultListAction(items)
 
-        application, *volume = query.split()
-        apps = list(
-            filter(
-                lambda app: application.lower() in getCleanName(app, system).lower(),
-                apps,
-            )
-        )
+        command, *components = argument.split()
 
-        if (
-            list(
-                filter(lambda app: getCleanName(app, system).lower() == "system", apps)
-            )
-            == []
-        ):
-            apps.append(system)
+        if command == CommandTypes.VOLUME.value:
+            apps = get_system()
+            apps += get_playing_applications()
 
-        if not volume:
-            return RenderResultListAction(
-                createEntries(
-                    apps=apps,
-                    name=lambda app: f"#{app.index} {getCleanName(app, system)}",
-                    description=lambda app: str(app.volume),
-                    on_enter=lambda app: SetUserQueryAction(
-                        f"{event.get_keyword()} {getCleanName(app, system)} "
-                    ),
-                )
-            )
+            if components:
+                apps = filter_apps(apps, components[0])
 
-        volume = volume.pop()
-        return RenderResultListAction(
-            createEntries(
-                apps=apps,
-                name=lambda app: f"Set {getCleanName(app, system)} volume to {volume}%",
-                description=lambda app: str(app.volume),
-                on_enter=lambda app: ExtensionCustomAction(
-                    {
-                        "sink": app,
-                        "volume": volume,
-                    },
-                    keep_app_open=False,
-                ),
-            )
-        )
+            if len(components) > 1:
+                volume = int(components[1]) if len(components) > 1 else None
+
+                items = show_volume_selection(apps, volume)
+                items += cancel()
+
+                return RenderResultListAction(items)
+
+            items = show_playing_applications(apps)
+            items += cancel()
+
+            return RenderResultListAction(items)
+
+        if command == CommandTypes.PROFILE.value:
+            if components:
+                profiles = get_device_profiles(int(components[0]))
+
+                items = show_device_profiles(profiles)
+                items += cancel()
+
+                return RenderResultListAction(items)
+
+            devices = get_devices()
+
+            items = show_devices(devices)
+            items += cancel()
+
+            return RenderResultListAction(items)
 
 
 class ItemEnterEventListener(EventListener):
     def on_event(self, event, extension):
+        keyword = extension.preferences["volume_control"]
         data = event.get_data()
-        sink = data["sink"]
-        volume = data["volume"]
-        with Pulse("ulauncher-volume-control") as pulse:
-            pulse.volume_set_all_chans(sink, int(volume) / 100)
+        type = data.get("type")
+
+        if type == EventTypes.MENU.value:
+            # show new menu
+            command = data.get("command")
+            print(command)
+            return SetUserQueryAction(f"{keyword} {command} ")
+
+        if type == EventTypes.APPS.value:
+            # select app
+            command = data.get("command")
+            app = data.get("application")
+            return SetUserQueryAction(f"{keyword} {command} {app.index} ")
+
+        if type == EventTypes.VOLUME.value:
+            app = data.get("application")
+            volume = data.get("volume")
+            return set_application_volume(app, volume)
+
+        if type == EventTypes.DEVICE.value:
+            # show device profiles
+            command = data.get("command")
+            device = data.get("device")
+            return SetUserQueryAction(f"{keyword} {command} {device.index}")
+
+        if type == EventTypes.PROFILE.value:
+            # select profile
+            device = data.get("device")
+            profile = data.get("profile")
+            print(f"{device}, {profile}")
+            return set_device_profile(device, profile)
+
+        if type == EventTypes.CANCEL.value:
+            return SetUserQueryAction("")
+
+        return DoNothingAction()
 
 
 if __name__ == "__main__":

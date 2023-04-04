@@ -1,19 +1,19 @@
 {
-  "required_api_version": "^2.0.0",
-  "name": "Volume Control",
-  "description": "Control system volume",
-  "developer_name": "André Freitas <andrecfreitas58@gmail.com>",
-  "icon": "images/icon.png",
-  "options": {
-    "query_debounce": 0.1
-  },
-  "preferences": [
-    {
-      "id": "keyword",
-      "type": "keyword",
-      "name": "Main keyword",
-      "description": "Keyword to invoke this extension",
-      "default_value": "vol"
-    }
-  ]
+    "required_api_version": "^2.0.0",
+    "name": "Volume Control",
+    "description": "Control system volume",
+    "developer_name": "André Freitas <andrecfreitas58@gmail.com>",
+    "icon": "images/icon.png",
+    "options": {
+        "query_debounce": 0.1
+    },
+    "preferences": [
+        {
+            "id": "keyword",
+            "type": "keyword",
+            "name": "Main keyword",
+            "description": "Keyword to invoke this extension",
+            "default_value": "vc"
+        }
+    ]
 }
