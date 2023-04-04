@@ -91,7 +91,7 @@ class KeywordQueryEventListener(EventListener):
 
 class ItemEnterEventListener(EventListener):
     def on_event(self, event, extension):
-        keyword = extension.preferences["volume_control"]
+        keyword = extension.preferences["keyword"]
         data = event.get_data()
         type = data.get("type")
 
