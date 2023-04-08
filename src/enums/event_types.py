@@ -3,8 +3,8 @@ from enum import Enum
 
 class EventTypes(Enum):
     MENU = "menu"
-    DEVICE = "device"
+    APPLICATION = "application"
     VOLUME = "volume"
-    APPS = "apps"
+    DEVICE = "device"
     PROFILE = "profile"
     CANCEL = "cancel"

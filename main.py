@@ -102,7 +102,7 @@ class ItemEnterEventListener(EventListener):
             command = data.get("command")
             return SetUserQueryAction(f"{keyword} {command} ")
 
-        if type == EventTypes.APPS.value:
+        if type == EventTypes.APPLICATION.value:
             # select app
             command = data.get("command")
             app = data.get("application")

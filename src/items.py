@@ -74,7 +74,7 @@ def show_playing_applications(apps):
             description=f"{app.volume}",
             on_enter=ExtensionCustomAction(
                 {
-                    "type": EventTypes.APPS.value,
+                    "type": EventTypes.APPLICATION.value,
                     "command": CommandTypes.VOLUME.value,
                     "application": app,
                 },
