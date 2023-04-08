@@ -98,7 +98,6 @@ class ItemEnterEventListener(EventListener):
         if type == EventTypes.MENU.value:
             # show new menu
             command = data.get("command")
-            print(command)
             return SetUserQueryAction(f"{keyword} {command} ")
 
         if type == EventTypes.APPS.value:

@@ -1,5 +1,7 @@
 from pulsectl import Pulse
 
+from src.enums.command_types import CommandTypes
+
 from .utils import try_parse_int
 
 
@@ -41,13 +43,13 @@ def get_options():
         MenuOption(
             name="Volume control",
             description="Change the volume of the system of applications",
-            command="volume",
+            command=CommandTypes.VOLUME.value,
             icon="images/icon.png",
         ),
         MenuOption(
             name="Device profiles",
             description="Change the profile of the current device",
-            command="profile",
+            command=CommandTypes.PROFILE.value,
             icon="images/device.png",
         ),
     ]
