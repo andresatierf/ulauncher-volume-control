@@ -126,3 +126,8 @@ def filter_apps(apps, search=None):
             apps,
         )
     )
+
+
+def on_cancel(query):
+    user_query = f"{' '.join(query.strip().split(' ')[:-1])}"
+    return user_query if len(user_query) == 0 else f"{user_query} "

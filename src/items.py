@@ -17,7 +17,10 @@ def show_menu(options):
             name=option.name,
             description=option.description,
             on_enter=ExtensionCustomAction(
-                {"type": EventTypes.MENU.value, "command": option.command},
+                {
+                    "type": EventTypes.MENU.value,
+                    "command": option.command,
+                },
                 keep_app_open=True,
             ),
         )
@@ -89,7 +92,11 @@ def show_volume_selection(apps, volume=None):
             name=f"Set {app.name} volume to {volume}%",
             description=f"{app.volume}",
             on_enter=ExtensionCustomAction(
-                {"type": EventTypes.VOLUME.value, "application": app, "volume": volume},
+                {
+                    "type": EventTypes.VOLUME.value,
+                    "application": app,
+                    "volume": volume,
+                },
                 keep_app_open=False,
             ),
         )
@@ -97,13 +104,17 @@ def show_volume_selection(apps, volume=None):
     ]
 
 
-def cancel():
+def cancel(query):
     return [
         ExtensionResultItem(
             icon=CANCEL_ICON,
             name="Cancel",
             on_enter=ExtensionCustomAction(
-                {"type": EventTypes.CANCEL.value}, keep_app_open=False
+                {
+                    "type": EventTypes.CANCEL.value,
+                    "query": query,
+                },
+                keep_app_open=query.count(" ") > 1,
             ),
         )
     ]

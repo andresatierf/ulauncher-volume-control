@@ -25,6 +25,7 @@ from src.functions import (
     get_system,
     get_playing_applications,
     filter_apps,
+    on_cancel,
     set_device_profile,
     set_application_volume,
 )
@@ -39,6 +40,7 @@ class VolumeControlExtension(Extension):
 
 class KeywordQueryEventListener(EventListener):
     def on_event(self, event, extension):
+        query = event.get_query()
         keyword = event.get_keyword()
         argument = event.get_argument()
 
@@ -46,7 +48,7 @@ class KeywordQueryEventListener(EventListener):
             options = get_options()
 
             items = show_menu(options)
-            items += cancel()
+            items += cancel(query)
 
             return RenderResultListAction(items)
 
@@ -63,12 +65,12 @@ class KeywordQueryEventListener(EventListener):
                 volume = int(components[1]) if len(components) > 1 else None
 
                 items = show_volume_selection(apps, volume)
-                items += cancel()
+                items += cancel(query)
 
                 return RenderResultListAction(items)
 
             items = show_playing_applications(apps)
-            items += cancel()
+            items += cancel(query)
 
             return RenderResultListAction(items)
 
@@ -77,14 +79,14 @@ class KeywordQueryEventListener(EventListener):
                 profiles = get_device_profiles(int(components[0]))
 
                 items = show_device_profiles(profiles)
-                items += cancel()
+                items += cancel(query)
 
                 return RenderResultListAction(items)
 
             devices = get_devices()
 
             items = show_devices(devices)
-            items += cancel()
+            items += cancel(query)
 
             return RenderResultListAction(items)
 
@@ -115,7 +117,7 @@ class ItemEnterEventListener(EventListener):
             # show device profiles
             command = data.get("command")
             device = data.get("device")
-            return SetUserQueryAction(f"{keyword} {command} {device.index}")
+            return SetUserQueryAction(f"{keyword} {command} {device.index} ")
 
         if type == EventTypes.PROFILE.value:
             # select profile
@@ -125,7 +127,9 @@ class ItemEnterEventListener(EventListener):
             return set_device_profile(device, profile)
 
         if type == EventTypes.CANCEL.value:
-            return SetUserQueryAction("")
+            query = data.get("query")
+            user_query = on_cancel(query)
+            return SetUserQueryAction(user_query)
 
         return DoNothingAction()
 
