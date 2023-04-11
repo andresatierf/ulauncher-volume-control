@@ -14,4 +14,4 @@ deps: ## Install Python Dependencies
 	@pip3 install -r requirements.txt
 
 dev: ## Runs ulauncher on development mode
-	ulauncher --no-extensions --dev -v |& grep -i audio-control
+	killall ulauncher; ulauncher --no-extensions --dev -v |& grep -i audio-control

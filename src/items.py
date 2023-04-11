@@ -1,7 +1,7 @@
-from os import walk
 from ulauncher.api.shared.item.ExtensionResultItem import ExtensionResultItem
-from ulauncher.api.shared.action.OpenAction import OpenAction
 from ulauncher.api.shared.action.ExtensionCustomAction import ExtensionCustomAction
+
+from src.utils import try_parse_int
 
 from .enums import CommandTypes, EventTypes
 
@@ -89,16 +89,21 @@ def show_volume_selection(apps, volume=None):
     return [
         ExtensionResultItem(
             icon=VOLUME_ICON,
-            name=f"Set {app.name} volume to {volume}%",
+            name=f"Set {app.name} volume to {vol}%",
             description=f"{app.volume}",
             on_enter=ExtensionCustomAction(
                 {
                     "type": EventTypes.VOLUME.value,
                     "application": app,
-                    "volume": volume,
+                    "volume": vol,
                 },
                 keep_app_open=False,
             ),
+        )
+        for vol in (
+            [0, 50, 70, 100]
+            if not type(try_parse_int(volume)) == int
+            else [try_parse_int(volume)]
         )
         for app in apps
     ]

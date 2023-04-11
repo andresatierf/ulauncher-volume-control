@@ -79,12 +79,11 @@ def get_devices():
     return [Device(device) for device in devices]
 
 
-def get_device_profiles(device_index):
+def get_device_profiles(devices, device_index):
     profiles = []
-    devices = get_devices()
     device = list(
         filter(
-            lambda dev: device_index == dev.index,
+            lambda dev: try_parse_int(device_index) == dev.index,
             map(lambda device: device.card, devices),
         )
     )[0]
@@ -117,17 +116,65 @@ def set_application_volume(app, volume):
         pulse.volume_set_all_chans(sink, int(volume) / 100)
 
 
-def filter_apps(apps, search=None):
+def on_cancel(query):
+    user_query = f"{' '.join(query.strip().split(' ')[:-1])}"
+    return user_query if len(user_query) == 0 else f"{user_query} "
+
+
+def filter_items(arr, search=None):
+    if len(arr) == 0 or search is None:
+        return arr
+
+    if type(arr[0]) == MenuOption:
+        return filter_options(arr, search)
+
+    if type(arr[0]) == Application:
+        return filter_apps(arr, search)
+
+    if type(arr[0]) == Device:
+        return filter_devices(arr, search)
+
+    if type(arr[0]) == Profile:
+        return filter_profiles(arr, search)
+
+
+def filter_options(options, search):
     return list(
         filter(
-            lambda app: search is None
-            or app.name.lower().find(search.lower()) > -1
+            lambda option: option.name.lower().find(search.lower()) > -1
+            or option.description.lower().find(search.lower()) > -1,
+            options,
+        )
+    )
+
+
+def filter_apps(apps, search):
+    return list(
+        filter(
+            lambda app: app.name.lower().find(search.lower()) > -1
             or try_parse_int(search) == app.index,
             apps,
         )
     )
 
 
-def on_cancel(query):
-    user_query = f"{' '.join(query.strip().split(' ')[:-1])}"
-    return user_query if len(user_query) == 0 else f"{user_query} "
+def filter_devices(devices, search):
+    return list(
+        filter(
+            lambda device: device.name.lower().find(search.lower()) > -1
+            or device.description.lower().find(search.lower()) > -1
+            or try_parse_int(search) == device.index,
+            devices,
+        )
+    )
+
+
+def filter_profiles(profiles, search):
+    return list(
+        filter(
+            lambda profile: profile.name.lower().find(search.lower()) > -1
+            or profile.description.lower().find(search.lower()) > -1
+            or try_parse_int(search) == profile.device,
+            profiles,
+        )
+    )
